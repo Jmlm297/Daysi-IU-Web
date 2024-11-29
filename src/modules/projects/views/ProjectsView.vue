@@ -82,7 +82,7 @@ import FabButton from '@/modules/common/components/FabButton.vue';
 import InputModal from '@/modules/common/components/InputModal.vue';
 import AddCircle from '@/modules/common/icons/AddCircle.vue';
 import ModalIcon from '@/modules/common/icons/ModalIcon.vue';
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useProgressStore } from '@/stores/progressStore';
 
 interface Project {
@@ -96,6 +96,14 @@ const projects = ref<Project[]>([]);
 const modalOpen = ref(false);
 const customModalOpen = ref(false);
 const progressStore = useProgressStore();
+
+// Cargar datos al montar el componente
+onMounted(() => {
+  const savedProjects = localStorage.getItem('projects');
+  if (savedProjects) {
+    projects.value = JSON.parse(savedProjects);
+  }
+});
 
 const onNewValue = (projectName: string) => {
   progressStore.startLoading();
@@ -113,6 +121,8 @@ const onNewValue = (projectName: string) => {
       };
       
       projects.value.push(newProject);
+      // Guardar en localStorage
+      localStorage.setItem('projects', JSON.stringify(projects.value));
       
       const incrementProgress = setInterval(() => {
         if (newProject.progress < 30) {
@@ -138,6 +148,7 @@ const completeTask = (project: Project) => {
     
     if (project.progress < 100) {
       project.progress += 10;
+      localStorage.setItem('projects', JSON.stringify(projects.value));
     }
     
     setTimeout(() => {

@@ -1,5 +1,5 @@
 <template>
-  <dialog class="modal" :open="open">
+  <dialog class="modal" :open="open" @open="focusInput">
     <div class="modal-box">
       <h3 class="font-bold text-lg">{{ title }}</h3>
       <p v-if="subTitle" class="py-4">{{ subTitle }}</p>
@@ -30,7 +30,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
 interface Props {
   open: boolean;
@@ -39,7 +39,12 @@ interface Props {
   placeholder?: string;
 }
 
-defineProps<Props>();
+const props = defineProps<{
+  open: boolean;
+  title: string;
+  subTitle?: string;
+  placeholder?: string;
+}>();
 
 const emits = defineEmits<{
   close: [void];
@@ -48,6 +53,20 @@ const emits = defineEmits<{
 
 const inputValue = ref('');
 const inputRef = ref<HTMLInputElement | null>(null);
+
+import { nextTick } from 'vue';
+
+const focusInput = () => {
+  nextTick(() => {
+    inputRef.value?.focus();
+  });
+};
+
+watch(() => props.open, (newVal) => {
+  if (newVal) {
+    focusInput();
+  }
+});
 
 const submitValue = () => {
   if (!inputValue.value) {
