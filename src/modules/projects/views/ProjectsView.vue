@@ -1,21 +1,39 @@
 <template>
   <div class="overflow-x-auto w-full">
     <table class="table">
-      <!-- head -->
       <thead>
         <tr>
-          <th></th>
+          <th>#</th>
           <th>Proyecto</th>
           <th>Tareas</th>
           <th>Avance</th>
+          <th>Acciones</th>
         </tr>
       </thead>
       <tbody>
-        <tr class="hover">
-          <th>2</th>
-          <td>Hart Hagerty</td>
-          <td>Desktop Support Technician</td>
-          <td>Purple</td>
+        <tr v-for="(project, index) in projects" :key="project.id" class="hover">
+          <th>{{ index + 1 }}</th>
+          <td>{{ project.name }}</td>
+          <td>{{ project.progress >= 100 ? 'Finalizado' : 'En progreso' }}</td>
+          <td class="relative">
+            <div class="w-full bg-gray-200 h-2 rounded">
+              <div 
+                class="h-full transition-all duration-300 ease-in-out rounded" 
+                :class="project.progress >= 100 ? 'bg-success' : 'bg-secondary'"
+                :style="{ width: `${project.progress}%` }"
+              ></div>
+            </div>
+          </td>
+          <td>
+            <button 
+              @click="completeTask(project)"
+              class="btn btn-sm"
+              :class="project.progress >= 100 ? 'btn-success' : 'btn-secondary'"
+              :disabled="project.progress >= 100"
+            >
+              {{ project.progress >= 100 ? 'Completado' : 'Completar tarea' }}
+            </button>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -65,11 +83,66 @@ import InputModal from '@/modules/common/components/InputModal.vue';
 import AddCircle from '@/modules/common/icons/AddCircle.vue';
 import ModalIcon from '@/modules/common/icons/ModalIcon.vue';
 import { ref } from 'vue';
+import { useProgressStore } from '@/stores/progressStore';
 
+interface Project {
+  id: number;
+  name: string;
+  tasks: string;
+  progress: number;
+}
+
+const projects = ref<Project[]>([]);
 const modalOpen = ref(false);
 const customModalOpen = ref(false);
+const progressStore = useProgressStore();
 
 const onNewValue = (projectName: string) => {
-  console.log({ projectName });
+  progressStore.startLoading();
+  
+  setTimeout(() => {
+    progressStore.updateProgress(30);
+    setTimeout(() => {
+      progressStore.updateProgress(60);
+      
+      const newProject: Project = {
+        id: projects.value.length + 1,
+        name: projectName,
+        tasks: 'Pendiente',
+        progress: 0
+      };
+      
+      projects.value.push(newProject);
+      
+      const incrementProgress = setInterval(() => {
+        if (newProject.progress < 30) {
+          newProject.progress += 5;
+        } else {
+          clearInterval(incrementProgress);
+        }
+      }, 200);
+      
+      setTimeout(() => {
+        progressStore.stopLoading();
+        modalOpen.value = false;
+      }, 500);
+    }, 300);
+  }, 300);
+};
+
+const completeTask = (project: Project) => {
+  progressStore.startLoading();
+  
+  setTimeout(() => {
+    progressStore.updateProgress(50);
+    
+    if (project.progress < 100) {
+      project.progress += 10;
+    }
+    
+    setTimeout(() => {
+      progressStore.stopLoading();
+    }, 500);
+  }, 300);
 };
 </script>

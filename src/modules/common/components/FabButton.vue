@@ -1,5 +1,5 @@
 <template>
-  <button @click="$emit('click')" :class="['btn btn-circle btn-secondary fixed', position]">
+  <button @click="handleClick" :class="['btn btn-circle btn-secondary fixed', position]">
     <slot />
   </button>
 </template>
@@ -13,10 +13,14 @@ withDefaults(defineProps<Props>(), {
   position: 'bottom-right',
 });
 
-defineEmits(['click']);
+const emit = defineEmits(['click']);
+
+const handleClick = () => {
+  emit('click');
+}
 </script>
 
-<style scoped>
+<style scoped lang="postcss">
 .top-left {
   @apply top-10 left-10;
 }
@@ -26,7 +30,7 @@ defineEmits(['click']);
 .bottom-left {
   @apply bottom-10 left-10;
 }
-.bottom-right {
+.bottom-right {   
   @apply bottom-10 right-10;
 }
 </style>
